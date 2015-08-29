@@ -8,13 +8,13 @@ namespace StockAnalysis.Models
     public class StockModel
     {
         public string StockSymbol { get; set; }
-        public float StockPrice { get; set; }
-        public float PERatio { get; set; }
-        public float MarketCap { get; set; }
-        public float YearLow { get; set; }
-        public float YearHigh { get; set; }
-        public float Dividend { get; set; }
-        public float TargetPrice { get; set; }
+        public string StockPrice { get; set; }
+        public string PERatio { get; set; }
+        public string MarketCap { get; set; }
+        public string YearLow { get; set; }
+        public string YearHigh { get; set; }
+        public string Dividend { get; set; }
+        public string TargetPrice { get; set; }
 
     }
 }
