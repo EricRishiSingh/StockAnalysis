@@ -18,6 +18,7 @@ namespace StockAnalysis.Controllers
         public async Task<ActionResult> Stocks()
         {
             List<StockModel> stockInfo = new List<StockModel>();
+            stockInfo.Add(StockModel.Header);
             List<string> stockSymbols = new List<string>() { "GOOG", "ABUS" };
 
             // Get the stock info by using the following arguments
@@ -62,5 +63,20 @@ namespace StockAnalysis.Controllers
             return View(stockInfo);
         }
 
+        public async Task<ActionResult> StockSearch(string stockSymbol)
+        {
+            string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=s";
+
+            var task = Task<WebResponse>.Run(() =>
+            {
+                var webReq = (HttpWebRequest)WebRequest.Create(url);
+                var webResp = (HttpWebResponse)webReq.GetResponse();
+                return webResp;
+            });
+
+            var result = await task;
+
+            return View();
+        }
     }
 }
