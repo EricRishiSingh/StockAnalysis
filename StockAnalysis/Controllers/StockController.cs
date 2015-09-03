@@ -19,18 +19,16 @@ namespace StockAnalysis.Controllers
 
         public async Task<ActionResult> Stocks()
         {
+            // Initialize stocks and stock info
             List<StockModel> stockInfo = new List<StockModel>();
             stockInfo.Add(StockModel.Header);
             List<string> stockSymbols = new List<string>() { "^GSPC", "^INDU", "OSPTX" };
 
+            // Add user stock to the table
             var user = User.GetUserProfile();
             if (user != null)
-            {
                 if (user?.StockSymbols?.Any() ?? false)
-                {
                     stockSymbols.AddRange(user.StockSymbols.XmlDeserializeFromString());
-                }
-            }
 
             // Get the stock info by using the following arguments
             // StockSymbol = s
@@ -51,6 +49,7 @@ namespace StockAnalysis.Controllers
 
             var result = await task;
 
+            // Retrieve stock information and add to list for view to use
             using (StreamReader strm = new StreamReader(result.GetResponseStream()))
             {
                 string line;
@@ -67,7 +66,7 @@ namespace StockAnalysis.Controllers
                         YearHigh = lineInfo[5],
                         Dividend = lineInfo[6],
                         TargetPrice = lineInfo[7],
-                        Name = lineInfo[8]
+                        Name = lineInfo[8].Replace("\"", "")
                     });
                 }
             }
@@ -88,14 +87,24 @@ namespace StockAnalysis.Controllers
 
             var result = await task;
 
+            // Add a stock to the table for user
             using (StreamReader strm = new StreamReader(result.GetResponseStream()))
             {
                 string line;
                 while ((line = strm.ReadLine()) != null)
                 {
                     var lineInfo = line.Split(',');
-                    string retStockSymbol = lineInfo[0].Replace("\"", "").ToUpper();
 
+                    // Return if the stock is not valid
+                    if (lineInfo.Count() < 2)
+                    {
+                        //ModelState.AddModelError("StockNotFound", $"The stock symbol '{stockSymbol}' is not valid");
+                        //return View("Stocks");
+                        return RedirectToAction("Stocks");
+                    }
+
+
+                    // Save result in database
                     using (var userContext = new UsersContext())
                     {
                         string userName = User.Identity.Name;
@@ -104,6 +113,7 @@ namespace StockAnalysis.Controllers
                             var user = userContext.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == userName.ToLower());
                             if (user != null)
                             {
+                                string retStockSymbol = lineInfo[0].Replace("\"", "").ToUpper();
                                 var list = user.StockSymbols.XmlDeserializeFromString();
                                 list.Add(retStockSymbol);
                                 user.StockSymbols = list.XmlSerializeToString();
@@ -111,6 +121,29 @@ namespace StockAnalysis.Controllers
                                 userContext.SaveChanges();
                             }
                         }
+                    }
+                }
+            }
+
+            return RedirectToAction("Stocks");
+        }
+
+        public ActionResult RemoveStock(string stockSymbol)
+        {
+            // Remove stock from database
+            using (var userContext = new UsersContext())
+            {
+                string userName = User.Identity.Name;
+                if (User?.Identity?.IsAuthenticated ?? true)
+                {
+                    var user = userContext.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == userName.ToLower());
+                    if (user != null)
+                    {
+                        var list = user.StockSymbols.XmlDeserializeFromString();
+                        list.Remove(stockSymbol);
+                        user.StockSymbols = list.XmlSerializeToString();
+                        userContext.Entry(user).CurrentValues.SetValues(user);
+                        userContext.SaveChanges();
                     }
                 }
             }
@@ -134,6 +167,11 @@ namespace StockAnalysis.Controllers
             return user;
         }
 
+        /// <summary>
+        /// List<string> --> String
+        /// </summary>
+        /// <param name="objectInstance">The List(string)</param>
+        /// <returns>string</returns>
         public static string XmlSerializeToString(this object objectInstance)
         {
             try
@@ -154,6 +192,11 @@ namespace StockAnalysis.Controllers
             }
         }
 
+        /// <summary>
+        /// String --> List<string>
+        /// </summary>
+        /// <param name="objectData">The string</param>
+        /// <returns>List(string)</returns>
         public static List<string> XmlDeserializeFromString(this string objectData)
         {
             try
