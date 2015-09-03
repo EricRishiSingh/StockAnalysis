@@ -25,6 +25,7 @@ namespace StockAnalysis.Models
         [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
         public string UserName { get; set; }
+        public string StockSymbols { get; set; }
     }
 
     public class RegisterExternalLoginModel

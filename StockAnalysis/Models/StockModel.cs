@@ -16,6 +16,7 @@ namespace StockAnalysis.Models
         public string YearHigh { get; set; }
         public string Dividend { get; set; }
         public string TargetPrice { get; set; }
+        public string Name { get; set; }
         public static StockModel Header  => new StockModel()
         {
             StockSymbol = nameof(StockSymbol),
@@ -25,7 +26,8 @@ namespace StockAnalysis.Models
             YearLow = nameof(YearLow),
             YearHigh = nameof(YearHigh),
             Dividend = nameof(Dividend),
-            TargetPrice = nameof(TargetPrice)
+            TargetPrice = nameof(TargetPrice),
+            Name = nameof(Name)
         };
     }
 
