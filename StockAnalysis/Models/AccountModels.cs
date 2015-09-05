@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -16,6 +17,11 @@ namespace StockAnalysis.Models
         }
 
         public DbSet<UserProfile> UserProfiles { get; set; }
+        public UserProfile GetUser(string userName)
+        {
+            var userProfile = UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == userName.ToLower());
+            return userProfile;
+        }
     }
 
     [Table("UserProfile")]

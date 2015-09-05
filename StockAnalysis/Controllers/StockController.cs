@@ -22,13 +22,16 @@ namespace StockAnalysis.Controllers
             // Initialize stocks and stock info
             List<StockModel> stockInfo = new List<StockModel>();
             stockInfo.Add(StockModel.Header);
-            List<string> stockSymbols = new List<string>() { "^GSPC", "^INDU", "OSPTX" };
-
-            // Add user stock to the table
-            var user = User.GetUserProfile();
-            if (user != null)
-                if (user?.StockSymbols?.Any() ?? false)
-                    stockSymbols.AddRange(user.StockSymbols.XmlDeserializeFromString());
+            List<string> stockSymbols = new List<string>() { "^GSPC", "^GSPTSE" };
+            
+            using (var userContext = new UsersContext())
+            {
+                // Add user stock to the table
+                var user = userContext.GetUser(User.Identity.Name);
+                if (user != null)
+                    if (user?.StockSymbols?.Any() ?? false)
+                        stockSymbols.AddRange(user.StockSymbols.XmlDeserializeFromString());
+            }
 
             // Get the stock info by using the following arguments
             // StockSymbol = s
@@ -39,6 +42,7 @@ namespace StockAnalysis.Controllers
             // YearHigh = k
             // Dividend = d
             // TargetPrice = t8
+            // Name = n
             string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + string.Join("+", stockSymbols) + "&f=sarj1jkdt8n";
             var task = Task<WebResponse>.Run(() =>
             {
@@ -76,7 +80,7 @@ namespace StockAnalysis.Controllers
 
         public async Task<ActionResult> StockSearch(string stockSymbol)
         {
-            string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=s";
+            string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=sn";
 
             var task = Task<WebResponse>.Run(() =>
             {
@@ -96,21 +100,18 @@ namespace StockAnalysis.Controllers
                     var lineInfo = line.Split(',');
 
                     // Return if the stock is not valid
-                    if (lineInfo.Count() < 2)
+                    if (lineInfo.Any(i => i.Contains("N/A")))
                     {
                         //ModelState.AddModelError("StockNotFound", $"The stock symbol '{stockSymbol}' is not valid");
-                        //return View("Stocks");
                         return RedirectToAction("Stocks");
                     }
-
 
                     // Save result in database
                     using (var userContext = new UsersContext())
                     {
-                        string userName = User.Identity.Name;
                         if (User?.Identity?.IsAuthenticated ?? true)
                         {
-                            var user = userContext.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == userName.ToLower());
+                            var user = userContext.GetUser(User.Identity.Name);
                             if (user != null)
                             {
                                 string retStockSymbol = lineInfo[0].Replace("\"", "").ToUpper();
@@ -136,7 +137,7 @@ namespace StockAnalysis.Controllers
                 string userName = User.Identity.Name;
                 if (User?.Identity?.IsAuthenticated ?? true)
                 {
-                    var user = userContext.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == userName.ToLower());
+                    var user = userContext.GetUser(userName);
                     if (user != null)
                     {
                         var list = user.StockSymbols.XmlDeserializeFromString();
@@ -154,19 +155,6 @@ namespace StockAnalysis.Controllers
 
     public static class Extensions
     {
-        public static UserProfile GetUserProfile(this System.Security.Principal.IPrincipal User)
-        {
-            UserProfile user = null;
-            using (var userContext = new UsersContext())
-            {
-                string userName = User.Identity.Name;
-                if (User?.Identity?.IsAuthenticated ?? true)
-                    user = userContext.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == userName.ToLower());
-            }
-
-            return user;
-        }
-
         /// <summary>
         /// List<string> --> String
         /// </summary>

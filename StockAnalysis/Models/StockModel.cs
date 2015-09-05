@@ -31,10 +31,10 @@ namespace StockAnalysis.Models
         };
     }
 
-    public class StockSearchModel
-    {
-        [Required]
-        [Display(Name = "Stock Symbol")]
-        public string StockSymbol { get; set; }
-    }
+    //public class StockSearchModel
+    //{
+    //    [Required]
+    //    [Display(Name = "Stock Symbol")]
+    //    public string StockSymbol { get; set; }
+    //}
 }
