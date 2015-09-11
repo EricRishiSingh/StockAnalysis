@@ -18,9 +18,9 @@
         </div>
     </section>
 }
-<h3>We suggest the following:</h3>
+@*<h3>We suggest the following:</h3>*@
 <section id="loginForm">
-    <h2>Use a local account to log in.</h2>
+    @*<h2>Use a local account to log in.</h2>*@
     @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post,
                                               new { enctype = "multipart/form-data" }))
     {
@@ -70,7 +70,10 @@
         <td>@stock.YearHigh</td>
         <td>@stock.Dividend</td>
         <td>@stock.TargetPrice</td>
-        <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
+        @if (stock.StockSymbol != Model[0].StockSymbol)
+        {
+            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
+        }
     </tr>
     }
 </table>

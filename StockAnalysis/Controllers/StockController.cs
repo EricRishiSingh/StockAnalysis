@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.UI;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
@@ -14,14 +15,19 @@ namespace StockAnalysis.Controllers
 {
     public class StockController : Controller
     {
+        #region Fields/Properties
+
+
+        #endregion
+
         //
         // GET: /Stocks/
 
         public async Task<ActionResult> Stocks()
         {
             // Initialize stocks and stock info
-            List<StockModel> stockInfo = new List<StockModel>();
-            stockInfo.Add(StockModel.Header);
+            List<StockModel> stockModels = new List<StockModel>();
+            stockModels.Add(StockModel.Header);
             List<string> stockSymbols = new List<string>() { "^GSPC", "^GSPTSE" };
             
             using (var userContext = new UsersContext())
@@ -60,7 +66,7 @@ namespace StockAnalysis.Controllers
                 while ((line = strm.ReadLine()) != null)
                 {
                     var lineInfo = line.Split(',');
-                    stockInfo.Add(new StockModel()
+                    stockModels.Add(new StockModel()
                     {
                         StockSymbol = lineInfo[0].Replace("\"", ""),
                         StockPrice = lineInfo[1],
@@ -74,11 +80,11 @@ namespace StockAnalysis.Controllers
                     });
                 }
             }
-
-            return View(stockInfo);
+            
+            return View(stockModels);
         }
 
-        public async Task<ActionResult> StockSearch(string stockSymbol)
+        public async Task<ActionResult> StockSearch(StockModel stockModel, string stockSymbol)
         {
             string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=sn";
 
@@ -100,7 +106,7 @@ namespace StockAnalysis.Controllers
                     var lineInfo = line.Split(',');
 
                     // Return if the stock is not valid
-                    if (lineInfo.Any(i => i.Contains("N/A")))
+                    if (line.Count() <= 1 || lineInfo.Any(i => i.Contains("N/A")))
                     {
                         //ModelState.AddModelError("StockNotFound", $"The stock symbol '{stockSymbol}' is not valid");
                         return RedirectToAction("Stocks");
