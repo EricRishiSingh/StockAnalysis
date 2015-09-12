@@ -17,18 +17,43 @@ namespace StockAnalysis.Models
         public string Dividend { get; set; }
         public string TargetPrice { get; set; }
         public string Name { get; set; }
-        public static StockModel Header  => new StockModel()
-        {
-            StockSymbol = nameof(StockSymbol),
-            StockPrice = nameof(StockPrice),
-            PERatio = nameof(PERatio),
-            MarketCap = nameof(MarketCap),
-            YearLow = nameof(YearLow),
-            YearHigh = nameof(YearHigh),
-            Dividend = nameof(Dividend),
-            TargetPrice = nameof(TargetPrice),
-            Name = nameof(Name)
-        };
+        //public static StockModel Header  => new StockModel()
+        //{
+        //    StockSymbol = nameof(StockSymbol),
+        //    StockPrice = nameof(StockPrice),
+        //    PERatio = nameof(PERatio),
+        //    MarketCap = nameof(MarketCap),
+        //    YearLow = nameof(YearLow),
+        //    YearHigh = nameof(YearHigh),
+        //    Dividend = nameof(Dividend),
+        //    TargetPrice = nameof(TargetPrice),
+        //    Name = nameof(Name)
+        //};
+    }
+
+    [Serializable]
+    public class UserStockModel
+    {
+        public string StockSymbol { get; set; }
+        public float NumberOfShares { get; set; }
+        public float Performance { get; set; }
+        public float CostBasis { get; set; }
+        public Grade StockGrade { get; set; }
+    }
+
+    public class UserView
+    {
+        public List<StockModel> StockModels { get; set; }
+        public List<UserStockModel> UserStockModels { get; set; }
+    }
+
+    public enum Grade
+    {
+        A,
+        B,
+        C,
+        D,
+        F
     }
 
     //public class StockSearchModel

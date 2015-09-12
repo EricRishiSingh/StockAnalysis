@@ -1,15 +1,15 @@
-﻿using System;
+﻿using StockAnalysis.Models;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI;
-using System.Threading.Tasks;
-using System.Net;
-using System.IO;
-using System.Text;
 using System.Xml.Serialization;
-using StockAnalysis.Models;
 
 namespace StockAnalysis.Controllers
 {
@@ -27,16 +27,15 @@ namespace StockAnalysis.Controllers
         {
             // Initialize stocks and stock info
             List<StockModel> stockModels = new List<StockModel>();
-            stockModels.Add(StockModel.Header);
             List<string> stockSymbols = new List<string>() { "^GSPC", "^GSPTSE" };
-            
+
             using (var userContext = new UsersContext())
             {
                 // Add user stock to the table
                 var user = userContext.GetUser(User.Identity.Name);
                 if (user != null)
                     if (user?.StockSymbols?.Any() ?? false)
-                        stockSymbols.AddRange(user.StockSymbols.XmlDeserializeFromString());
+                        stockSymbols.AddRange(Deserialize<List<string>>(user.StockSymbols));
             }
 
             // Get the stock info by using the following arguments
@@ -50,14 +49,7 @@ namespace StockAnalysis.Controllers
             // TargetPrice = t8
             // Name = n
             string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + string.Join("+", stockSymbols) + "&f=sarj1jkdt8n";
-            var task = Task<WebResponse>.Run(() =>
-            {
-                var webReq = (HttpWebRequest)WebRequest.Create(url);
-                var webResp = (HttpWebResponse)webReq.GetResponse();
-                return webResp;
-            });
-
-            var result = await task;
+            var result = await GetWebResponse(url);
 
             // Retrieve stock information and add to list for view to use
             using (StreamReader strm = new StreamReader(result.GetResponseStream()))
@@ -80,59 +72,94 @@ namespace StockAnalysis.Controllers
                     });
                 }
             }
-            
-            return View(stockModels);
+
+            var userStockModels = new List<UserStockModel>();
+            using (var userContext = new UsersContext())
+            {
+                if (User?.Identity?.IsAuthenticated ?? true)
+                {
+                    var user = userContext.GetUser(User.Identity.Name);
+                    if (user != null)
+                    {
+                        userStockModels = string.IsNullOrEmpty(user.UserStockInformation) ? new List<UserStockModel>() : Deserialize<List<UserStockModel>>(user.UserStockInformation);
+                    }
+                }
+            }
+
+            return View(new UserView(){ StockModels = stockModels, UserStockModels = userStockModels });
         }
 
-        public async Task<ActionResult> StockSearch(StockModel stockModel, string stockSymbol)
+        public ActionResult StockSearch(string stockSymbol)
         {
-            string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=sn";
+            if (!ValidateStockSymbol(stockSymbol))
+                return RedirectToAction("Stocks");
 
-            var task = Task<WebResponse>.Run(() =>
+            // Save result in database
+            using (var userContext = new UsersContext())
             {
-                var webReq = (HttpWebRequest)WebRequest.Create(url);
-                var webResp = (HttpWebResponse)webReq.GetResponse();
-                return webResp;
-            });
-
-            var result = await task;
-
-            // Add a stock to the table for user
-            using (StreamReader strm = new StreamReader(result.GetResponseStream()))
-            {
-                string line;
-                while ((line = strm.ReadLine()) != null)
+                if (User?.Identity?.IsAuthenticated ?? true)
                 {
-                    var lineInfo = line.Split(',');
-
-                    // Return if the stock is not valid
-                    if (line.Count() <= 1 || lineInfo.Any(i => i.Contains("N/A")))
+                    var user = userContext.GetUser(User.Identity.Name);
+                    if (user != null)
                     {
-                        //ModelState.AddModelError("StockNotFound", $"The stock symbol '{stockSymbol}' is not valid");
-                        return RedirectToAction("Stocks");
-                    }
-
-                    // Save result in database
-                    using (var userContext = new UsersContext())
-                    {
-                        if (User?.Identity?.IsAuthenticated ?? true)
-                        {
-                            var user = userContext.GetUser(User.Identity.Name);
-                            if (user != null)
-                            {
-                                string retStockSymbol = lineInfo[0].Replace("\"", "").ToUpper();
-                                var list = user.StockSymbols.XmlDeserializeFromString();
-                                list.Add(retStockSymbol);
-                                user.StockSymbols = list.XmlSerializeToString();
-                                userContext.Entry(user).CurrentValues.SetValues(user);
-                                userContext.SaveChanges();
-                            }
-                        }
+                        string retStockSymbol = stockSymbol.ToUpper();
+                        var list = Deserialize<List<string>>(user.StockSymbols);
+                        list.Add(retStockSymbol);
+                        user.StockSymbols = Serialize<List<string>>(user.StockSymbols);
+                        userContext.Entry(user).CurrentValues.SetValues(user);
+                        userContext.SaveChanges();
                     }
                 }
             }
 
             return RedirectToAction("Stocks");
+        }
+
+        public ActionResult AddUserStock(string stockSymbol, string numberOfShares)
+        {
+            float numOfShares = 0;
+            if (!float.TryParse(numberOfShares, out numOfShares) || !ValidateStockSymbol(stockSymbol))
+                return RedirectToAction("Stocks");
+
+
+            // Save result in database
+            // TODO find a better way to get the user - make it common
+            using (var userContext = new UsersContext())
+            {
+                if (User?.Identity?.IsAuthenticated ?? true)
+                {
+                    var user = userContext.GetUser(User.Identity.Name);
+                    if (user != null)
+                    {
+                        var userStocks = string.IsNullOrEmpty(user.UserStockInformation) ? new List<UserStockModel>() : Deserialize<List<UserStockModel>>(user.UserStockInformation);
+                        var stock = userStocks.FirstOrDefault(i => i.StockSymbol == stockSymbol);
+                        if (stock != null)
+                        {
+                            if ((stock.NumberOfShares + numOfShares) < 0)
+                                return RedirectToAction("Stocks");
+
+                            stock.NumberOfShares = stock.NumberOfShares + numOfShares;
+                        }
+                        else
+                        {
+                            var newStock = new UserStockModel
+                            {
+                                StockSymbol = stockSymbol.ToUpper(),
+                                NumberOfShares = numOfShares
+                            };
+                            userStocks.Add(newStock);
+                        }
+
+                        // TODO add stock update information
+
+                        user.UserStockInformation = Serialize<List<UserStockModel>>(userStocks);
+                        userContext.Entry(user).CurrentValues.SetValues(user);
+                        userContext.SaveChanges();
+                    }
+                }
+
+                return RedirectToAction("Stocks");
+            }
         }
 
         public ActionResult RemoveStock(string stockSymbol)
@@ -146,9 +173,9 @@ namespace StockAnalysis.Controllers
                     var user = userContext.GetUser(userName);
                     if (user != null)
                     {
-                        var list = user.StockSymbols.XmlDeserializeFromString();
+                        var list = Deserialize<List<string>>(user.StockSymbols);
                         list.Remove(stockSymbol);
-                        user.StockSymbols = list.XmlSerializeToString();
+                        user.StockSymbols = Serialize<List<string>>(user.StockSymbols);
                         userContext.Entry(user).CurrentValues.SetValues(user);
                         userContext.SaveChanges();
                     }
@@ -157,58 +184,79 @@ namespace StockAnalysis.Controllers
 
             return RedirectToAction("Stocks");
         }
-    }
 
-    public static class Extensions
-    {
+        #region HelperMethods
+
         /// <summary>
-        /// List<string> --> String
+        /// Deserialize the object
         /// </summary>
-        /// <param name="objectInstance">The List(string)</param>
-        /// <returns>string</returns>
-        public static string XmlSerializeToString(this object objectInstance)
+        /// <typeparam name="T">Type of object</typeparam>
+        /// <param name="xml">The xml string</param>
+        /// <returns>The object</returns>
+        public static T Deserialize<T>(string xml)
         {
-            try
-            { 
-            var serializer = new XmlSerializer(objectInstance.GetType());
+            var serializer = new XmlSerializer(typeof(T));
+            return (T)serializer.Deserialize(new StringReader(xml));
+        }
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <typeparam name="T">Type of object</typeparam>
+        /// <param name="xml">The xml string</param>
+        /// <returns>The object</returns>
+        public static string Serialize<T>(object value)
+        {
+            var serializer = new XmlSerializer(typeof(T));
             var sb = new StringBuilder();
 
             using (TextWriter writer = new StringWriter(sb))
             {
-                serializer.Serialize(writer, objectInstance);
+                serializer.Serialize(writer, value);
             }
 
             return sb.ToString();
         }
-            catch(Exception ex)
-            {
-                return string.Empty;
-            }
-        }
 
-        /// <summary>
-        /// String --> List<string>
-        /// </summary>
-        /// <param name="objectData">The string</param>
-        /// <returns>List(string)</returns>
-        public static List<string> XmlDeserializeFromString(this string objectData)
+        private Task<HttpWebResponse> GetWebResponse(string url)
         {
-            try
+            return Task<WebResponse>.Run(() =>
             {
-                var serializer = new XmlSerializer(typeof(List<string>));
-                List<string>result;
+                var webReq = (HttpWebRequest)WebRequest.Create(url);
+                var webResp = (HttpWebResponse)webReq.GetResponse();
+                return webResp;
+            });
+        }
+        private bool ValidateStockSymbol(string stockSymbol)
+        {
+            string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=sn";
+            var task = GetWebResponse(url);
 
-                using (TextReader reader = new StringReader(objectData))
+            // Add a stock to the table for user
+            using (StreamReader strm = new StreamReader(task.Result.GetResponseStream()))
+            {
+                string line;
+                while ((line = strm.ReadLine()) != null)
                 {
-                    result = (List<string>)serializer.Deserialize(reader);
+                    var lineInfo = line.Split(',');
+
+                    // Return if the stock is not valid
+                    if (line.Count() <= 1 || lineInfo.Any(i => i.Contains("N/A")))
+                    {
+                        //ModelState.AddModelError("StockNotFound", $"The stock symbol '{stockSymbol}' is not valid");
+                        return false;
+                    }
                 }
 
-                return result;
-            }
-            catch
-            {
-                return new List<string>();
+                return true;
             }
         }
+
+        #endregion
+    }
+
+    public static class Extensions
+    {
+
     }
 }

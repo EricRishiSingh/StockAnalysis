@@ -586,8 +586,6 @@ tr.pager td {
     padding: 0 0.25em 0 0;
 }
 
- table tr:nth-child(1){ font-weight:bold; }
-
 
 /********************
 *   Mobile Styles   *

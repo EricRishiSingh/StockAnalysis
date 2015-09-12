@@ -221,6 +221,10 @@
     <Compile Include="Migrations\201509030000106_EricTest.Designer.cs">
       <DependentUpon>201509030000106_EricTest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509120338377_Update2.cs" />
+    <Compile Include="Migrations\201509120338377_Update2.Designer.cs">
+      <DependentUpon>201509120338377_Update2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\StockModel.cs" />
@@ -351,6 +355,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509030000106_EricTest.resx">
       <DependentUpon>201509030000106_EricTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509120338377_Update2.resx">
+      <DependentUpon>201509120338377_Update2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model StockAnalysis.Models.UserView
+@{
     ViewBag.Title = "Stocks";
 }
 @section featured {
@@ -56,9 +57,24 @@
         <a href="http://go.microsoft.com/fwlink/?LinkId=245157">Learn more…</a>
     </li>
 </ol>*@
-@*<h1>Your Stocks</h1>*@
+<h1>Stock Watchlist</h1>
 <table style="width:100%">
-    @foreach(var stock in Model)
+    <thead>
+        <tr>
+            <td>StockSymbol</td>
+            <td>Name</td>
+            <td>StockPrice</td>
+            <td>PERatio</td>
+            <td>MarketCap</td>
+            <td>YearLow</td>
+            <td>YearHigh</td>
+            <td>StockPrice</td>
+            <td>Dividend</td>
+            <td>TargetPrice</td>
+        </tr>
+    </thead>
+
+    @foreach(var stock in Model.StockModels)
     { 
     <tr>
         <td>@stock.StockSymbol</td>
@@ -70,10 +86,45 @@
         <td>@stock.YearHigh</td>
         <td>@stock.Dividend</td>
         <td>@stock.TargetPrice</td>
-        @if (stock.StockSymbol != Model[0].StockSymbol)
-        {
-            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
-        }
+        <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
     </tr>
+    }
+</table>
+
+<section id="loginForm">
+    @*<h2>Use a local account to log in.</h2>*@
+    @using (Html.BeginForm("AddUserStock", "Stock", FormMethod.Post,
+                                                      new { enctype = "multipart/form-data" }))
+    {
+        @Html.ValidationSummary(true)
+        <fieldset>
+            Enter stock symbol <input type="text" name="stockSymbol" /><br />
+            Enter # of shares <input type="text" name="numberOfShares" title="+ve if adding. -ve in selling" />
+            <input type="submit" value="Submit" />
+        </fieldset>
+    }
+</section>
+<h1>Your Stocks</h1>
+<table style="width:100%">
+    <thead>
+        <tr>
+            <td>StockSymbol</td>
+            <td>NumberOfShares</td>
+            <td>Performance</td>
+            <td>CostBasis</td>
+            <td>StockGrade</td>
+        </tr>
+    </thead>
+
+    @foreach (var stock in Model.UserStockModels)
+    {
+        <tr>
+            <td>@stock.StockSymbol</td>
+            <td>@stock.NumberOfShares</td>
+            <td>@stock.Performance</td>
+            <td>@stock.CostBasis</td>
+            <td>@stock.StockGrade</td>
+            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
+        </tr>
     }
 </table>
