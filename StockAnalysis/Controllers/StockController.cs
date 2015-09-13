@@ -82,11 +82,18 @@ namespace StockAnalysis.Controllers
                     if (user != null)
                     {
                         userStockModels = string.IsNullOrEmpty(user.UserStockInformation) ? new List<UserStockModel>() : Deserialize<List<UserStockModel>>(user.UserStockInformation);
+
+                        foreach (var stock in userStockModels)
+                            await UpdateUserStocks(stock);
+
+                        user.UserStockInformation = Serialize<List<UserStockModel>>(userStockModels);
+                        userContext.Entry(user).CurrentValues.SetValues(user);
+                        userContext.SaveChanges();
                     }
                 }
             }
 
-            return View(new UserView(){ StockModels = stockModels, UserStockModels = userStockModels });
+            return View(new UserView() { StockModels = stockModels, UserStockModels = userStockModels });
         }
 
         public ActionResult StockSearch(string stockSymbol)
@@ -102,7 +109,7 @@ namespace StockAnalysis.Controllers
                     var user = userContext.GetUser(User.Identity.Name);
                     if (user != null)
                     {
-                        string retStockSymbol = stockSymbol.ToUpper();
+                        string retStockSymbol = stockSymbol.ToUpperInvariant();
                         var list = Deserialize<List<string>>(user.StockSymbols);
                         list.Add(retStockSymbol);
                         user.StockSymbols = Serialize<List<string>>(user.StockSymbols);
@@ -115,12 +122,14 @@ namespace StockAnalysis.Controllers
             return RedirectToAction("Stocks");
         }
 
-        public ActionResult AddUserStock(string stockSymbol, string numberOfShares)
+        public async Task<ActionResult> AddUserStock(string stockSymbol, string numberOfShares, string stockPrice)
         {
             float numOfShares = 0;
-            if (!float.TryParse(numberOfShares, out numOfShares) || !ValidateStockSymbol(stockSymbol))
+            float price = 0;
+            if (!float.TryParse(numberOfShares, out numOfShares)
+                || !float.TryParse(stockPrice, out price)
+                || !ValidateStockSymbol(stockSymbol.ToUpperInvariant()))
                 return RedirectToAction("Stocks");
-
 
             // Save result in database
             // TODO find a better way to get the user - make it common
@@ -132,26 +141,38 @@ namespace StockAnalysis.Controllers
                     if (user != null)
                     {
                         var userStocks = string.IsNullOrEmpty(user.UserStockInformation) ? new List<UserStockModel>() : Deserialize<List<UserStockModel>>(user.UserStockInformation);
-                        var stock = userStocks.FirstOrDefault(i => i.StockSymbol == stockSymbol);
+                        var stock = userStocks.FirstOrDefault(i => i.StockSymbol == stockSymbol.ToUpperInvariant());
                         if (stock != null)
                         {
-                            if ((stock.NumberOfShares + numOfShares) < 0)
+                            var stockPurchases = stock.StockPurchases;
+                            if (stockPurchases == null)
+                                stockPurchases = new List<StockPurchase>();
+
+                            if ((stockPurchases.Sum(i => i.NumberOfShares) + numOfShares) < 0)
                                 return RedirectToAction("Stocks");
 
-                            stock.NumberOfShares = stock.NumberOfShares + numOfShares;
+
+                            if (price > 0)
+                                stockPurchases.Add(new StockPurchase() { NumberOfShares = numOfShares, StockPrice = price });
                         }
                         else
                         {
-                            var newStock = new UserStockModel
+                            if (price > 0)
                             {
-                                StockSymbol = stockSymbol.ToUpper(),
-                                NumberOfShares = numOfShares
-                            };
-                            userStocks.Add(newStock);
+                                var newStock = new UserStockModel()
+                                {
+                                    StockSymbol = stockSymbol.ToUpperInvariant(),
+                                    StockPurchases = new List<StockPurchase>() { new StockPurchase() { NumberOfShares = numOfShares, StockPrice = price } }
+                                };
+
+
+                                if (price > 0)
+                                    userStocks.Add(newStock);
+                            }
                         }
 
                         // TODO add stock update information
-
+                        await UpdateUserStocks(stock);
                         user.UserStockInformation = Serialize<List<UserStockModel>>(userStocks);
                         userContext.Entry(user).CurrentValues.SetValues(user);
                         userContext.SaveChanges();
@@ -160,6 +181,57 @@ namespace StockAnalysis.Controllers
 
                 return RedirectToAction("Stocks");
             }
+        }
+
+        private async Task UpdateUserStocks(UserStockModel stock)
+        {
+            float stockPrice = await GetStockPrice(stock.StockSymbol);
+
+            if (stock?.StockPurchases?.Any() == true)
+            {
+                var purchases = stock.StockPurchases;
+                float totalPurchaseCost = purchases.Sum(i => i.NumberOfShares * i.StockPrice);
+                float totalNumberOfShares = purchases.Sum(i => i.NumberOfShares);
+
+                stock.CostBasis = totalPurchaseCost / totalNumberOfShares;
+                stock.Performance = (float)Math.Round((stockPrice - stock.CostBasis) / stock.CostBasis * 100, 2);
+                stock.StockGrade = CalculateGrade(stock.Performance);
+            }
+        }
+
+        private Grade CalculateGrade(float performance)
+        {
+            Grade result = Grade.F;
+
+            if (performance >= 25)
+                result = Grade.A;
+            else if (performance >= 10)
+                result = Grade.B;
+            else if (performance >= 0)
+                result = Grade.C;
+            else if (performance >= -50)
+                result = Grade.D;
+
+            return result;
+        }
+
+        private async Task<float> GetStockPrice(string stockSymbol)
+        {
+            string url = @"http://download.finance.yahoo.com/d/quotes.csv?s=" + stockSymbol + "&f=a";
+            var result = await GetWebResponse(url);
+            float stockPrice = 0;
+
+            using (StreamReader strm = new StreamReader(result.GetResponseStream()))
+            {
+                string line;
+                while ((line = strm.ReadLine()) != null)
+                {
+                    var lineInfo = line.Split(',');
+                    float.TryParse(lineInfo[0], out stockPrice);
+                }
+            }
+
+            return stockPrice;
         }
 
         public ActionResult RemoveStock(string stockSymbol)

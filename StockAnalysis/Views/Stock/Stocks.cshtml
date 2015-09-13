@@ -99,7 +99,8 @@
         @Html.ValidationSummary(true)
         <fieldset>
             Enter stock symbol <input type="text" name="stockSymbol" /><br />
-            Enter # of shares <input type="text" name="numberOfShares" title="+ve if adding. -ve in selling" />
+            Enter # of shares <input type="text" name="numberOfShares" title="+ve if adding. -ve in selling" /><br />
+            Enter stock price <input type="text" name="stockPrice" />
             <input type="submit" value="Submit" />
         </fieldset>
     }
@@ -110,7 +111,7 @@
         <tr>
             <td>StockSymbol</td>
             <td>NumberOfShares</td>
-            <td>Performance</td>
+            <td>Performance (%)</td>
             <td>CostBasis</td>
             <td>StockGrade</td>
         </tr>
@@ -120,7 +121,7 @@
     {
         <tr>
             <td>@stock.StockSymbol</td>
-            <td>@stock.NumberOfShares</td>
+            <td>@stock.StockPurchases.Sum(i => i.NumberOfShares)</td>
             <td>@stock.Performance</td>
             <td>@stock.CostBasis</td>
             <td>@stock.StockGrade</td>

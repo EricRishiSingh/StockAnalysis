@@ -35,10 +35,16 @@ namespace StockAnalysis.Models
     public class UserStockModel
     {
         public string StockSymbol { get; set; }
-        public float NumberOfShares { get; set; }
         public float Performance { get; set; }
         public float CostBasis { get; set; }
         public Grade StockGrade { get; set; }
+        public List<StockPurchase> StockPurchases {get;set;}
+    }
+
+    public class StockPurchase
+    {
+        public float StockPrice { get; set; }
+        public float NumberOfShares { get; set; }
     }
 
     public class UserView
