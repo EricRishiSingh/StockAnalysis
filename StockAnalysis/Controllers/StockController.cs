@@ -110,9 +110,11 @@ namespace StockAnalysis.Controllers
                     if (user != null)
                     {
                         string retStockSymbol = stockSymbol.ToUpperInvariant();
-                        var list = Deserialize<List<string>>(user.StockSymbols);
+                        var list = new List<string>();
+                        if (user.StockSymbols != null)
+                            list = Deserialize<List<string>>(user.StockSymbols);
                         list.Add(retStockSymbol);
-                        user.StockSymbols = Serialize<List<string>>(user.StockSymbols);
+                        user.StockSymbols = Serialize<List<string>>(list);
                         userContext.Entry(user).CurrentValues.SetValues(user);
                         userContext.SaveChanges();
                     }
@@ -154,6 +156,8 @@ namespace StockAnalysis.Controllers
 
                             if (price > 0)
                                 stockPurchases.Add(new StockPurchase() { NumberOfShares = numOfShares, StockPrice = price });
+
+                            await UpdateUserStocks(stock);
                         }
                         else
                         {
@@ -168,11 +172,11 @@ namespace StockAnalysis.Controllers
 
                                 if (price > 0)
                                     userStocks.Add(newStock);
+
+                                await UpdateUserStocks(newStock);
                             }
                         }
 
-                        // TODO add stock update information
-                        await UpdateUserStocks(stock);
                         user.UserStockInformation = Serialize<List<UserStockModel>>(userStocks);
                         userContext.Entry(user).CurrentValues.SetValues(user);
                         userContext.SaveChanges();
@@ -183,6 +187,7 @@ namespace StockAnalysis.Controllers
             }
         }
 
+        // TODO improve performance. This method called too many times
         private async Task UpdateUserStocks(UserStockModel stock)
         {
             float stockPrice = await GetStockPrice(stock.StockSymbol);
@@ -234,7 +239,7 @@ namespace StockAnalysis.Controllers
             return stockPrice;
         }
 
-        public ActionResult RemoveStock(string stockSymbol)
+        public ActionResult RemoveStock(string stockSymbol, bool stockSymbols)
         {
             // Remove stock from database
             using (var userContext = new UsersContext())
@@ -245,9 +250,23 @@ namespace StockAnalysis.Controllers
                     var user = userContext.GetUser(userName);
                     if (user != null)
                     {
-                        var list = Deserialize<List<string>>(user.StockSymbols);
-                        list.Remove(stockSymbol);
-                        user.StockSymbols = Serialize<List<string>>(user.StockSymbols);
+                        if (stockSymbols)
+                        {
+                            var list = Deserialize<List<string>>(user.StockSymbols);
+                            list.Remove(stockSymbol);
+                            user.StockSymbols = Serialize<List<string>>(list);
+                        }
+                        else
+                        {
+                            var list = Deserialize<List<UserStockModel>>(user.UserStockInformation);
+                            var stockToRemove = list.FirstOrDefault(i => i.StockSymbol == stockSymbol);
+                            if (stockToRemove != null)
+                            {
+                                list.Remove(stockToRemove);
+                                user.StockSymbols = Serialize<List<string>>(list);
+                            }
+                        }
+
                         userContext.Entry(user).CurrentValues.SetValues(user);
                         userContext.SaveChanges();
                     }

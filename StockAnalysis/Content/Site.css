@@ -424,6 +424,19 @@ label.checkbox {
     display: inline;
 }
 
+label.inputLabel{
+    display: inline-block;
+    float: left;
+    clear: left;
+    width: 150px;
+    text-align: left;
+}
+
+input .rightAlign {
+    display: inline-block;
+    float: left;
+} 
+
 input, textarea {
     border: 1px solid #e2e2e2;
     background: #fff;
@@ -717,6 +730,11 @@ tr.pager td {
     input {
         width: 90%;
     }
+
+    input .rightAlign {
+        display: inline-block;
+        float: left;
+    }    
 
     /* login page */
     #loginForm {

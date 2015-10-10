@@ -20,44 +20,45 @@
     </section>
 }
 @*<h3>We suggest the following:</h3>*@
-<section id="loginForm">
+<h1>STOCK WATCHLIST</h1><br />
+<section id="loginForm" style="border:none">
     @*<h2>Use a local account to log in.</h2>*@
     @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post,
-                                              new { enctype = "multipart/form-data" }))
+                                                                      new { enctype = "multipart/form-data" }))
     {
         @Html.ValidationSummary(true)
         <fieldset>
-            Enter stock symbol <input type="text" name="stockSymbol" />
+            <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" /><br />
             <input type="submit" value="Submit" />
         </fieldset>
     }
 </section>
 
 @*<ol class="round">
-    <li class="one">
-        <h5>Getting Started</h5>
-        ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-        enables a clean separation of concerns and that gives you full control over markup
-        for enjoyable, agile development. ASP.NET MVC includes many features that enable
-        fast, TDD-friendly development for creating sophisticated applications that use
-        the latest web standards.
-        <a href="http://go.microsoft.com/fwlink/?LinkId=245151">Learn more…</a>
-    </li>
+        <li class="one">
+            <h5>Getting Started</h5>
+            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
+            enables a clean separation of concerns and that gives you full control over markup
+            for enjoyable, agile development. ASP.NET MVC includes many features that enable
+            fast, TDD-friendly development for creating sophisticated applications that use
+            the latest web standards.
+            <a href="http://go.microsoft.com/fwlink/?LinkId=245151">Learn more…</a>
+        </li>
 
-    <li class="two">
-        <h5>Add NuGet packages and jump-start your coding</h5>
-        NuGet makes it easy to install and update free libraries and tools.
-        <a href="http://go.microsoft.com/fwlink/?LinkId=245153">Learn more…</a>
-    </li>
+        <li class="two">
+            <h5>Add NuGet packages and jump-start your coding</h5>
+            NuGet makes it easy to install and update free libraries and tools.
+            <a href="http://go.microsoft.com/fwlink/?LinkId=245153">Learn more…</a>
+        </li>
 
-    <li class="three">
-        <h5>Find Web Hosting</h5>
-        You can easily find a web hosting company that offers the right mix of features
-        and price for your applications.
-        <a href="http://go.microsoft.com/fwlink/?LinkId=245157">Learn more…</a>
-    </li>
-</ol>*@
-<h1>Stock Watchlist</h1>
+        <li class="three">
+            <h5>Find Web Hosting</h5>
+            You can easily find a web hosting company that offers the right mix of features
+            and price for your applications.
+            <a href="http://go.microsoft.com/fwlink/?LinkId=245157">Learn more…</a>
+        </li>
+    </ol>*@
+
 <table style="width:100%">
     <thead>
         <tr>
@@ -74,38 +75,39 @@
         </tr>
     </thead>
 
-    @foreach(var stock in Model.StockModels)
-    { 
-    <tr>
-        <td>@stock.StockSymbol</td>
-        <td>@stock.Name</td>
-        <td>@stock.StockPrice</td>
-        <td>@stock.PERatio</td>
-        <td>@stock.MarketCap</td>
-        <td>@stock.YearLow</td>
-        <td>@stock.YearHigh</td>
-        <td>@stock.Dividend</td>
-        <td>@stock.TargetPrice</td>
-        <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
-    </tr>
+    @foreach (var stock in Model.StockModels)
+    {
+        <tr>
+            <td>@stock.StockSymbol</td>
+            <td>@stock.Name</td>
+            <td>@stock.StockPrice</td>
+            <td>@stock.PERatio</td>
+            <td>@stock.MarketCap</td>
+            <td>@stock.YearLow</td>
+            <td>@stock.YearHigh</td>
+            <td>@stock.Dividend</td>
+            <td>@stock.TargetPrice</td>
+            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
+        </tr>
     }
 </table>
 
-<section id="loginForm">
+<br />
+<h1>YOUR STOCKS</h1><br />
+<section id="loginForm" style="border:none">
     @*<h2>Use a local account to log in.</h2>*@
     @using (Html.BeginForm("AddUserStock", "Stock", FormMethod.Post,
-                                                      new { enctype = "multipart/form-data" }))
+                                                                              new { enctype = "multipart/form-data" }))
     {
         @Html.ValidationSummary(true)
         <fieldset>
-            Enter stock symbol <input type="text" name="stockSymbol" /><br />
-            Enter # of shares <input type="text" name="numberOfShares" title="+ve if adding. -ve in selling" /><br />
-            Enter stock price <input type="text" name="stockPrice" />
+            <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" />
+            <label class="inputLabel">Enter # of shares</label><input class="rightAlign" type="text" name="numberOfShares" title="+ve if adding. -ve in selling" />
+            <label class="inputLabel">Enter stock price</label><input class="rightAlign" type="text" name="stockPrice" /><br />
             <input type="submit" value="Submit" />
         </fieldset>
     }
 </section>
-<h1>Your Stocks</h1>
 <table style="width:100%">
     <thead>
         <tr>
