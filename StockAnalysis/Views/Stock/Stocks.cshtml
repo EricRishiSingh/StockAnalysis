@@ -2,7 +2,25 @@
 @{
     ViewBag.Title = "Stocks";
 }
-@section featured {
+
+@section scripts {
+    @Scripts.Render("/Scripts/webticker.js")
+    <script src="/Scripts/webticker.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#webticker").webTicker();
+        });
+    </script>
+}
+
+<ul id="webticker">
+    @foreach (var stock in Model.StockModels)
+    {
+        <li>[@stock.StockSymbol : @stock.StockPrice]</li>
+    }
+</ul>
+
+@*@section featured {
     <section class="featured">
         <div class="content-wrapper">
             <hgroup class="title">
@@ -18,13 +36,13 @@
             </p>
         </div>
     </section>
-}
+}*@
 @*<h3>We suggest the following:</h3>*@
 <h1>STOCK WATCHLIST</h1><br />
 <section id="loginForm" style="border:none">
     @*<h2>Use a local account to log in.</h2>*@
     @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post,
-                                                                      new { enctype = "multipart/form-data" }))
+                                                                              new { enctype = "multipart/form-data" }))
     {
         @Html.ValidationSummary(true)
         <fieldset>
@@ -69,7 +87,6 @@
             <td>MarketCap</td>
             <td>YearLow</td>
             <td>YearHigh</td>
-            <td>StockPrice</td>
             <td>Dividend</td>
             <td>TargetPrice</td>
         </tr>
@@ -97,7 +114,7 @@
 <section id="loginForm" style="border:none">
     @*<h2>Use a local account to log in.</h2>*@
     @using (Html.BeginForm("AddUserStock", "Stock", FormMethod.Post,
-                                                                              new { enctype = "multipart/form-data" }))
+                                                                                      new { enctype = "multipart/form-data" }))
     {
         @Html.ValidationSummary(true)
         <fieldset>
