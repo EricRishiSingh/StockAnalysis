@@ -5,10 +5,12 @@ namespace StockAnalysis
 {
     public class BundleConfig
     {
+        public const string BundlesJquery = "~/bundles/jquery";
+
         // For more information on Bundling, visit http://go.microsoft.com/fwlink/?LinkId=254725
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
+            bundles.Add(new ScriptBundle(BundlesJquery).Include(
                         "~/Scripts/jquery-{version}.js",
                         "~/Scripts/webticker.js"));
 

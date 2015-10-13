@@ -1,125 +1,135 @@
-﻿@model StockAnalysis.Models.UserView
-@{
-    ViewBag.Title = "Stocks";
-}
+﻿@using StockAnalysis
 
-@section scripts {
-    @Scripts.Render("~/Scripts/webticker.js")
-    <script src="/Scripts/webticker.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#webticker").webTicker();
-        });
-    </script>
-}
-
-<ul id="webticker">
-    @foreach (var stock in Model.StockModels)
-    {
-        <li>[@stock.StockSymbol : @stock.StockPrice]</li>
+    @model StockAnalysis.Models.UserView
+    @{
+        ViewBag.Title = "Stocks";
     }
-</ul>
 
-@*@section featured {
-        <section class="featured">
-            <div class="content-wrapper">
-                <hgroup class="title">
-                    <h1>@ViewBag.Title.</h1>
-                    <h2>@ViewBag.Message</h2>
-                </hgroup>
-                <p>
-                    To learn more about ASP.NET MVC visit
-                    <a href="http://asp.net/mvc" title="ASP.NET MVC Website">http://asp.net/mvc</a>.
-                    The page features <mark>videos, tutorials, and samples</mark> to help you get the most from ASP.NET MVC.
-                    If you have any questions about ASP.NET MVC visit
-                    <a href="http://forums.asp.net/1146.aspx/1?MVC" title="ASP.NET MVC Forum">our forums</a>.
-                </p>
-            </div>
-        </section>
-    }*@
-@*<h3>We suggest the following:</h3>*@
-<h1>STOCK WATCHLIST</h1><br />
-<section id="loginForm" style="border:none">
-    @*<h2>Use a local account to log in.</h2>*@
-    @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post,
-                                                                                      new { enctype = "multipart/form-data" }))
-    {
-        @Html.ValidationSummary(true)
-        <fieldset>
-            <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" /><br />
-            <input type="submit" value="Submit" />
-        </fieldset>
+    @section scripts {
+        @*@Scripts.Render("~/Scripts/webticker.js")
+            <script src="/Scripts/webticker.js"></script>
+            <script>
+                $(document).ready(function () {
+                    $("#webticker").webTicker();
+                });
+            </script>*@
+
+        @Scripts.Render(BundleConfig.BundlesJquery)
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#webticker").webTicker();
+            })
+        </script>
+
     }
-</section>
 
-<table style="width:100%">
-    <thead>
-        <tr>
-            <td>StockSymbol</td>
-            <td>Name</td>
-            <td>StockPrice</td>
-            <td>PERatio</td>
-            <td>MarketCap</td>
-            <td>YearLow</td>
-            <td>YearHigh</td>
-            <td>Dividend</td>
-            <td>TargetPrice</td>
-        </tr>
-    </thead>
+    <ul id="webticker">
+        @foreach (var stock in Model.StockModels)
+        {
+            <li>[@stock.StockSymbol : @stock.StockPrice]</li>
+        }
+    </ul>
 
-    @foreach (var stock in Model.StockModels)
-    {
-        <tr>
-            <td>@stock.StockSymbol</td>
-            <td>@stock.Name</td>
-            <td>@stock.StockPrice</td>
-            <td>@stock.PERatio</td>
-            <td>@stock.MarketCap</td>
-            <td>@stock.YearLow</td>
-            <td>@stock.YearHigh</td>
-            <td>@stock.Dividend</td>
-            <td>@stock.TargetPrice</td>
-            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol, stockSymbols = true })'" /></td>
-        </tr>
-    }
-</table>
+    @*@section featured {
+            <section class="featured">
+                <div class="content-wrapper">
+                    <hgroup class="title">
+                        <h1>@ViewBag.Title.</h1>
+                        <h2>@ViewBag.Message</h2>
+                    </hgroup>
+                    <p>
+                        To learn more about ASP.NET MVC visit
+                        <a href="http://asp.net/mvc" title="ASP.NET MVC Website">http://asp.net/mvc</a>.
+                        The page features <mark>videos, tutorials, and samples</mark> to help you get the most from ASP.NET MVC.
+                        If you have any questions about ASP.NET MVC visit
+                        <a href="http://forums.asp.net/1146.aspx/1?MVC" title="ASP.NET MVC Forum">our forums</a>.
+                    </p>
+                </div>
+            </section>
+        }*@
+    @*<h3>We suggest the following:</h3>*@
+    <h1>STOCK WATCHLIST</h1><br />
+    <section id="loginForm" style="border:none">
+        @*<h2>Use a local account to log in.</h2>*@
+        @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post,
+                                                                                          new { enctype = "multipart/form-data" }))
+        {
+            @Html.ValidationSummary(true)
+            <fieldset>
+                <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" /><br />
+                <input type="submit" value="Submit" />
+            </fieldset>
+        }
+    </section>
 
-<br />
-<h1>YOUR STOCKS</h1><br />
-<section id="loginForm" style="border:none">
-    @*<h2>Use a local account to log in.</h2>*@
-    @using (Html.BeginForm("AddUserStock", "Stock", FormMethod.Post,
-                                                                                              new { enctype = "multipart/form-data" }))
-    {
-        @Html.ValidationSummary(true)
-        <fieldset>
-            <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" />
-            <label class="inputLabel">Enter # of shares</label><input class="rightAlign" type="text" name="numberOfShares" title="+ve if adding. -ve in selling" />
-            <label class="inputLabel">Enter stock price</label><input class="rightAlign" type="text" name="stockPrice" /><br />
-            <input type="submit" value="Submit" />
-        </fieldset>
-    }
-</section>
-<table style="width:100%">
-    <thead>
-        <tr>
-            <td>StockSymbol</td>
-            <td>NumberOfShares</td>
-            <td>Performance (%)</td>
-            <td>CostBasis</td>
-            <td>StockGrade</td>
-        </tr>
-    </thead>
+    <table style="width:100%">
+        <thead>
+            <tr>
+                <td>StockSymbol</td>
+                <td>Name</td>
+                <td>StockPrice</td>
+                <td>PERatio</td>
+                <td>MarketCap</td>
+                <td>YearLow</td>
+                <td>YearHigh</td>
+                <td>Dividend</td>
+                <td>TargetPrice</td>
+            </tr>
+        </thead>
 
-    @foreach (var stock in Model.UserStockModels)
-    {
-        <tr>
-            <td>@stock.StockSymbol</td>
-            <td>@stock.StockPurchases.Sum(i => i.NumberOfShares)</td>
-            <td>@stock.Performance</td>
-            <td>@stock.CostBasis</td>
-            <td>@stock.StockGrade</td>
-            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol, stockSymbols = false })'" /></td>
-        </tr>
-    }
-</table>
+        @foreach (var stock in Model.StockModels)
+        {
+            <tr>
+                <td>@stock.StockSymbol</td>
+                <td>@stock.Name</td>
+                <td>@stock.StockPrice</td>
+                <td>@stock.PERatio</td>
+                <td>@stock.MarketCap</td>
+                <td>@stock.YearLow</td>
+                <td>@stock.YearHigh</td>
+                <td>@stock.Dividend</td>
+                <td>@stock.TargetPrice</td>
+                <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol, stockSymbols = true })'" /></td>
+            </tr>
+        }
+    </table>
+
+    <br />
+    <h1>YOUR STOCKS</h1><br />
+    <section id="loginForm" style="border:none">
+        @*<h2>Use a local account to log in.</h2>*@
+        @using (Html.BeginForm("AddUserStock", "Stock", FormMethod.Post,
+                                                                                                  new { enctype = "multipart/form-data" }))
+        {
+            @Html.ValidationSummary(true)
+            <fieldset>
+                <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" />
+                <label class="inputLabel">Enter # of shares</label><input class="rightAlign" type="text" name="numberOfShares" title="+ve if adding. -ve in selling" />
+                <label class="inputLabel">Enter stock price</label><input class="rightAlign" type="text" name="stockPrice" /><br />
+                <input type="submit" value="Submit" />
+            </fieldset>
+        }
+    </section>
+    <table style="width:100%">
+        <thead>
+            <tr>
+                <td>StockSymbol</td>
+                <td>NumberOfShares</td>
+                <td>Performance (%)</td>
+                <td>CostBasis</td>
+                <td>StockGrade</td>
+            </tr>
+        </thead>
+
+        @foreach (var stock in Model.UserStockModels)
+        {
+            <tr>
+                <td>@stock.StockSymbol</td>
+                <td>@stock.StockPurchases.Sum(i => i.NumberOfShares)</td>
+                <td>@stock.Performance</td>
+                <td>@stock.CostBasis</td>
+                <td>@stock.StockGrade</td>
+                <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol, stockSymbols = false })'" /></td>
+            </tr>
+        }
+    </table>
