@@ -7,13 +7,13 @@ namespace StockAnalysis.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class EricTest : IMigrationMetadata
+    public sealed partial class init : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(EricTest));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(init));
         
         string IMigrationMetadata.Id
         {
-            get { return "201509030000106_EricTest"; }
+            get { return "201510130111188_init"; }
         }
         
         string IMigrationMetadata.Source

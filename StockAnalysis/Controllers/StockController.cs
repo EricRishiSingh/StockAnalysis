@@ -113,10 +113,14 @@ namespace StockAnalysis.Controllers
                         var list = new List<string>();
                         if (user.StockSymbols != null)
                             list = Deserialize<List<string>>(user.StockSymbols);
-                        list.Add(retStockSymbol);
-                        user.StockSymbols = Serialize<List<string>>(list);
-                        userContext.Entry(user).CurrentValues.SetValues(user);
-                        userContext.SaveChanges();
+
+                        if (!list.Contains(retStockSymbol))
+                        {
+                            list.Add(retStockSymbol);
+                            user.StockSymbols = Serialize<List<string>>(list);
+                            userContext.Entry(user).CurrentValues.SetValues(user);
+                            userContext.SaveChanges();
+                        }
                     }
                 }
             }
@@ -152,7 +156,6 @@ namespace StockAnalysis.Controllers
 
                             if ((stockPurchases.Sum(i => i.NumberOfShares) + numOfShares) < 0)
                                 return RedirectToAction("Stocks");
-
 
                             if (price > 0)
                                 stockPurchases.Add(new StockPurchase() { NumberOfShares = numOfShares, StockPrice = price });
