@@ -116,19 +116,12 @@
         }
     </table>
 
-@section scripts {
-    @*@Scripts.Render("~/Scripts/webticker.js")
-        <script src="/Scripts/webticker.js"></script>
-        <script>
-            $(document).ready(function () {
-                $("#webticker").webTicker();
-            });
-        </script>*@
-
+@section Scripts
+{
+    @Scripts.Render(BundleConfig.BundlesJquery)
     <script type="text/javascript">
-        $(function () {
+        $(document).ready(function () {
             $("#webticker").webTicker();
         });
     </script>
-
 }
