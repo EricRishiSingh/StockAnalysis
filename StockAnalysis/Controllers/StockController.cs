@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.UI;
+using System.Web.Helpers;
 using System.Xml.Serialization;
 
 namespace StockAnalysis.Controllers
@@ -247,9 +247,9 @@ namespace StockAnalysis.Controllers
             // Remove stock from database
             using (var userContext = new UsersContext())
             {
-                string userName = User.Identity.Name;
                 if (User?.Identity?.IsAuthenticated ?? true)
                 {
+                    string userName = User.Identity.Name;
                     var user = userContext.GetUser(userName);
                     if (user != null)
                     {
@@ -266,7 +266,7 @@ namespace StockAnalysis.Controllers
                             if (stockToRemove != null)
                             {
                                 list.Remove(stockToRemove);
-                                user.StockSymbols = Serialize<List<string>>(list);
+                                user.UserStockInformation = Serialize<List<UserStockModel>>(list);
                             }
                         }
 
@@ -277,6 +277,21 @@ namespace StockAnalysis.Controllers
             }
 
             return RedirectToAction("Stocks");
+        }
+
+        public ActionResult StockChart(string stockSymbol)
+        {
+            var stockChart = new Chart(950, 530, theme: ChartTheme.Blue);
+            stockChart.AddTitle(stockSymbol);
+            stockChart.AddSeries(
+                name: stockSymbol,
+                chartType: "Line",
+                xValue: new[] { "1", "2", "3", "4", "5" },
+                yValues: new[] { "10", "6", "4", "5", "3" })
+                .Write();
+
+            stockChart.Save("~/Content/chart" + stockSymbol);
+            return base.File("~/Content/chart" + stockSymbol, "jpeg");
         }
 
         #region HelperMethods
