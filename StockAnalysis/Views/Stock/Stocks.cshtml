@@ -5,24 +5,6 @@
         ViewBag.Title = "Stocks";
     }
 
-    @section scripts {
-        @*@Scripts.Render("~/Scripts/webticker.js")
-            <script src="/Scripts/webticker.js"></script>
-            <script>
-                $(document).ready(function () {
-                    $("#webticker").webTicker();
-                });
-            </script>*@
-
-        @Scripts.Render(BundleConfig.BundlesJquery)
-        <script type="text/javascript">
-            $(document).ready(function () {
-                $("#webticker").webTicker();
-            })
-        </script>
-
-    }
-
     <ul id="webticker">
         @foreach (var stock in Model.StockModels)
         {
@@ -133,3 +115,21 @@
             </tr>
         }
     </table>
+
+@section scripts {
+    @*@Scripts.Render("~/Scripts/webticker.js")
+        <script src="/Scripts/webticker.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#webticker").webTicker();
+            });
+        </script>*@
+
+    @Scripts.Render(BundleConfig.BundlesJquery)
+    <script type="text/javascript">
+            $(document).ready(function () {
+                $("#webticker").webTicker();
+            })
+    </script>
+
+}
