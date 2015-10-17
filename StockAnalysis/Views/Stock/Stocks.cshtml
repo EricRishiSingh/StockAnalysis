@@ -125,11 +125,10 @@
             });
         </script>*@
 
-    @Scripts.Render(BundleConfig.BundlesJquery)
     <script type="text/javascript">
-            $(document).ready(function () {
-                $("#webticker").webTicker();
-            })
+        $(function () {
+            $("#webticker").webTicker();
+        });
     </script>
 
 }
