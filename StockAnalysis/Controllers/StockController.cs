@@ -281,13 +281,18 @@ namespace StockAnalysis.Controllers
 
         public ActionResult StockChart(string stockSymbol)
         {
+            if (string.IsNullOrEmpty(stockSymbol))
+                return RedirectToAction("Stocks");
+
+            var historicalPrices = GetHistoricalPrices(stockSymbol, 2014);
+
             var stockChart = new Chart(950, 530, theme: ChartTheme.Blue);
             stockChart.AddTitle(stockSymbol);
             stockChart.AddSeries(
                 name: stockSymbol,
                 chartType: "Line",
-                xValue: new[] { "1", "2", "3", "4", "5" },
-                yValues: new[] { "10", "6", "4", "5", "3" })
+                xValue: historicalPrices.Keys,
+                yValues: historicalPrices.Values)
                 .Write();
 
             stockChart.Save("~/Content/chart" + stockSymbol);
@@ -358,6 +363,30 @@ namespace StockAnalysis.Controllers
                 }
 
                 return true;
+            }
+        }
+
+        public Dictionary<DateTime, string> GetHistoricalPrices(string ticker, int yearToStartFrom)
+        {
+            Dictionary<DateTime, string> result = new Dictionary<DateTime, string>();
+
+            using (WebClient web = new WebClient())
+            {
+                string data = web.DownloadString(string.Format("http://ichart.finance.yahoo.com/table.csv?s={0}&a={1}&b={2}&c={3}", ticker, 1, 2, yearToStartFrom));
+                data = data.Replace("r", "");
+                string[] rows = data.Split('\n');
+
+                //First row is headers so Ignore it
+                for (int i = 1; i < rows.Length; i++)
+                {
+                    if (rows[i].Replace("n", "").Trim() == "")
+                        continue;
+
+                    string[] cols = rows[i].Split(',');
+                    result[Convert.ToDateTime(cols[0])] = cols[4];
+                }
+
+                return result;
             }
         }
 

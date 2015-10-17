@@ -12,6 +12,21 @@
     }
 </ul>
 
+<div style="margin-top: 10px">
+    @Html.DropDownList("StockChart", Model.StockModels.Select(i => new SelectListItem() { Text = i.StockSymbol, Value = i.StockSymbol }), "-- Select Stock --",
+    new
+    {
+        // TODO fix this
+        onchange = "document.location.href = 'Stock/StockChart?id=' + this.options[this.selectedIndex].value;"
+    }
+    //    onchange = @"
+    //        var form = document.forms[0]; 
+    //        form.action='Stock/StockChart/' + 'this.value';
+    //        form.submit();"
+    //}
+    )
+</div>
+
 <img style="margin-top: 10px" src="@Url.Action("StockChart", "Stock", new { stockSymbol = "ABUS" })" />
 
 <h1>STOCK WATCHLIST</h1><br />
