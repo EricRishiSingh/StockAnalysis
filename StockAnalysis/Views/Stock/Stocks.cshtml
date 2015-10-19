@@ -12,22 +12,17 @@
     }
 </ul>
 
-<div style="margin-top: 10px">
-    @Html.DropDownList("StockChart", Model.StockModels.Select(i => new SelectListItem() { Text = i.StockSymbol, Value = i.StockSymbol }), "-- Select Stock --",
+<div id="marginTop">
+    @Html.DropDownListFor(model => model.SelectedStockSymbol, Model.GetStockSymbols, "-- Select Stock --",
     new
     {
-        // TODO fix this
-        onchange = "document.location.href = 'Stock/StockChart?id=' + this.options[this.selectedIndex].value;"
-    }
-    //    onchange = @"
-    //        var form = document.forms[0]; 
-    //        form.action='Stock/StockChart/' + 'this.value';
-    //        form.submit();"
-    //}
-    )
+        //onchange = "window.location.href = '/Stock/StockChart?stockSymbol=' + this.options[this.selectedIndex].value;"
+        //onchange = "reloadChart(this.options[this.selectedIndex].value);"
+        @onchange = "reloadChart(" + "this.options[this.selectedIndex].value" + ")"
+    })
 </div>
 
-<img style="margin-top: 10px" src="@Url.Action("StockChart", "Stock", new { stockSymbol = "ABUS" })" />
+<img  id="chart" src="" />
 
 <h1>STOCK WATCHLIST</h1><br />
 <section id="loginForm" style="border:none">
@@ -122,5 +117,14 @@
         $(document).ready(function () {
             $("#webticker").webTicker();
         });
+
+        $(document).ready(function () {
+            reloadChart("^GSPC")
+        });
+
+        function reloadChart(stockSymbol)
+        {
+            document["chart"].src = '/Stock/StockChart?stockSymbol=' + stockSymbol;
+        }
     </script>
 }

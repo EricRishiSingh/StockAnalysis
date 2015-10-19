@@ -126,6 +126,14 @@ footer {
     height: 100px;
 }
 
+#marginTop{
+    margin-top: 10px;
+}
+
+#chart{
+    margin-top: 10px;
+}
+
 
 /* site title
 ----------------------------------------------------------*/

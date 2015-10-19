@@ -281,7 +281,7 @@ namespace StockAnalysis.Controllers
 
         public ActionResult StockChart(string stockSymbol)
         {
-            if (string.IsNullOrEmpty(stockSymbol))
+            if (string.IsNullOrEmpty(stockSymbol) || !ValidateStockSymbol(stockSymbol))
                 return RedirectToAction("Stocks");
 
             var historicalPrices = GetHistoricalPrices(stockSymbol, 2014);

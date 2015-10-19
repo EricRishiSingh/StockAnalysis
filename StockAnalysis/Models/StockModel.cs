@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
+using System.Web.Mvc;
 
 namespace StockAnalysis.Models
 {
@@ -51,6 +51,16 @@ namespace StockAnalysis.Models
     {
         public List<StockModel> StockModels { get; set; }
         public List<UserStockModel> UserStockModels { get; set; }
+        public string SelectedStockSymbol { get; set; }
+        public List<SelectListItem> GetStockSymbols
+        {
+            get
+            {
+                return StockModels
+                    .Select(i => new SelectListItem() { Text = i.StockSymbol, Value = i.StockSymbol })
+                    .ToList();
+            }
+        }
     }
 
     public enum Grade
