@@ -38,7 +38,7 @@ namespace StockAnalysis.Models
         public float Performance { get; set; }
         public float CostBasis { get; set; }
         public Grade StockGrade { get; set; }
-        public List<StockPurchase> StockPurchases {get;set;}
+        public List<StockPurchase> StockPurchases { get; set; }
     }
 
     public class StockPurchase
@@ -51,14 +51,19 @@ namespace StockAnalysis.Models
     {
         public List<StockModel> StockModels { get; set; }
         public List<UserStockModel> UserStockModels { get; set; }
-        public string SelectedStockSymbol { get; set; }
         public List<SelectListItem> GetStockSymbols
         {
             get
             {
-                return StockModels
+                var result = StockModels
                     .Select(i => new SelectListItem() { Text = i.StockSymbol, Value = i.StockSymbol })
                     .ToList();
+
+                var firstItem = result.FirstOrDefault();
+                if (firstItem != null)
+                    firstItem.Selected = true;
+
+                return result;
             }
         }
     }
@@ -72,10 +77,25 @@ namespace StockAnalysis.Models
         F
     }
 
-    //public class StockSearchModel
-    //{
-    //    [Required]
-    //    [Display(Name = "Stock Symbol")]
-    //    public string StockSymbol { get; set; }
-    //}
+    public static class DropDownValues
+    {
+        public static List<SelectListItem> GetTimeRange
+        {
+            get
+            {
+                var now = DateTime.Now;
+                return new List<SelectListItem>()
+                {
+                    new SelectListItem() { Text = "1 day", Value = now.AddDays(-1).ToString("MM/dd/yyyy") },
+                    new SelectListItem() { Text = "5 day", Value = now.AddDays(-5).ToString("MM/dd/yyyy") },
+                    new SelectListItem() { Text = "1 Month", Value = now.AddMonths(-1).ToString("MM/dd/yyyy") },
+                    new SelectListItem() { Text = "3 Month", Value = now.AddMonths(-3).ToString("MM/dd/yyyy") },
+                    new SelectListItem() { Text = "6 Month", Value = now.AddMonths(-6).ToString("MM/dd/yyyy") },
+                    new SelectListItem() { Text = "1 Year", Value = now.AddYears(-1).ToString("MM/dd/yyyy"), Selected = true },
+                    new SelectListItem() { Text = "5 Years", Value = now.AddYears(-5).ToString("MM/dd/yyyy") },
+                    new SelectListItem() { Text = "10 Years", Value = now.AddYears(-10).ToString("MM/dd/yyyy") }
+                };
+            }
+        }
+    }
 }

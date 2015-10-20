@@ -1,4 +1,5 @@
 ﻿@using StockAnalysis
+@using StockAnalysis.Models
 
 @model StockAnalysis.Models.UserView
 @{
@@ -13,12 +14,18 @@
 </ul>
 
 <div id="marginTop">
-    @Html.DropDownListFor(model => model.SelectedStockSymbol, Model.GetStockSymbols, "-- Select Stock --",
+    @Html.DropDownList("SelectedStock", Model.GetStockSymbols,
     new
     {
-        //onchange = "window.location.href = '/Stock/StockChart?stockSymbol=' + this.options[this.selectedIndex].value;"
-        //onchange = "reloadChart(this.options[this.selectedIndex].value);"
-        @onchange = "reloadChart(" + "this.options[this.selectedIndex].value" + ")"
+        @onchange = "reloadChart()"
+    })
+</div>
+
+<div id="marginTop">
+    @Html.DropDownList("ChartTimeRange", DropDownValues.GetTimeRange,
+    new
+    {
+        @onchange = "reloadChart()"
     })
 </div>
 
@@ -122,9 +129,14 @@
             reloadChart("^GSPC")
         });
 
-        function reloadChart(stockSymbol)
+        function reloadChart()
         {
-            document["chart"].src = '/Stock/StockChart?stockSymbol=' + stockSymbol;
+            var eDate = document.getElementById("ChartTimeRange");
+            var date = eDate.options[eDate.selectedIndex].value;
+
+            var eStock = document.getElementById("SelectedStock");
+            var selectedStock = eStock.options[eStock.selectedIndex].value;
+            document["chart"].src = '/Stock/StockChart?stockSymbol=' + selectedStock + '&date=' + date;
         }
     </script>
 }

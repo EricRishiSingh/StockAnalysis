@@ -279,12 +279,12 @@ namespace StockAnalysis.Controllers
             return RedirectToAction("Stocks");
         }
 
-        public ActionResult StockChart(string stockSymbol)
+        public ActionResult StockChart(string stockSymbol, string date)
         {
             if (string.IsNullOrEmpty(stockSymbol) || !ValidateStockSymbol(stockSymbol))
                 return RedirectToAction("Stocks");
 
-            var historicalPrices = GetHistoricalPrices(stockSymbol, 2014);
+            var historicalPrices = GetHistoricalPrices(stockSymbol, date);
 
             var stockChart = new Chart(950, 530, theme: ChartTheme.Blue);
             stockChart.AddTitle(stockSymbol);
@@ -295,8 +295,8 @@ namespace StockAnalysis.Controllers
                 yValues: historicalPrices.Values)
                 .Write();
 
-            stockChart.Save("~/Content/chart" + stockSymbol);
-            return base.File("~/Content/chart" + stockSymbol, "jpeg");
+            stockChart.Save("~/Content/chart");
+            return base.File("~/Content/chart", "jpeg");
         }
 
         #region HelperMethods
@@ -366,13 +366,14 @@ namespace StockAnalysis.Controllers
             }
         }
 
-        public Dictionary<DateTime, string> GetHistoricalPrices(string ticker, int yearToStartFrom)
+        public Dictionary<DateTime, string> GetHistoricalPrices(string ticker, string date)
         {
             Dictionary<DateTime, string> result = new Dictionary<DateTime, string>();
 
             using (WebClient web = new WebClient())
             {
-                string data = web.DownloadString(string.Format("http://ichart.finance.yahoo.com/table.csv?s={0}&a={1}&b={2}&c={3}", ticker, 1, 2, yearToStartFrom));
+                var timeRange = DateTime.ParseExact(date, "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                string data = web.DownloadString(string.Format("http://ichart.finance.yahoo.com/table.csv?s={0}&a={1}&b={2}&c={3}", ticker, timeRange.Month - 1, timeRange.Day, timeRange.Year));
                 data = data.Replace("r", "");
                 string[] rows = data.Split('\n');
 
