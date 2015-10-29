@@ -174,22 +174,18 @@ namespace StockAnalysis.Controllers
         private Grade CalculateGrade(float performance)
         {
             Grade result = Grade.F;
-
-            if (performance >= 25)
-                result = Grade.A;
-            else if (performance >= 10)
-                result = Grade.B;
-            else if (performance >= 0)
-                result = Grade.C;
-            else if (performance >= -50)
-                result = Grade.D;
+            var values = Enum.GetValues(typeof(Grade)).Cast<Grade>().OrderBy(i => i);
+            foreach(var value in values)
+            {
+                if (performance >= (int)value)
+                    result = (Grade)value;
+            }
 
             return result;
         }
 
         private float GetStockPrice(string stockSymbol)
         {
-            //var result = GetWebResponse(YahooURL + stockSymbol + "&f=a");
             float stockPrice = 0;
             foreach (var line in ParseWebResponse(YahooURL + stockSymbol + "&f=a"))
             {

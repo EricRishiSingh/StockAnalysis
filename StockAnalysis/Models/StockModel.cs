@@ -70,11 +70,11 @@ namespace StockAnalysis.Models
 
     public enum Grade
     {
-        A,
-        B,
-        C,
-        D,
-        F
+        A = 25,
+        B = 10,
+        C = 0,
+        D = -50,
+        F = -99999
     }
 
     public static class DropDownValues
