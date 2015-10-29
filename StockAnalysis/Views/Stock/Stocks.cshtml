@@ -13,7 +13,7 @@
     }
 </ul>
 
-<div id="marginTop">
+<div id="marginTop" style="float:left; margin-right:5px">
     @Html.DropDownList("SelectedStock", Model.GetStockSymbols,
     new
     {
@@ -34,13 +34,12 @@
 <h1>STOCK WATCHLIST</h1><br />
 <section id="loginForm" style="border:none">
     @*<h2>Use a local account to log in.</h2>*@
-    @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post,
-                                                                                                          new { enctype = "multipart/form-data" }))
+    @using (Html.BeginForm("StockSearch", "Stock", FormMethod.Post, new { enctype = "multipart/form-data" }))
     {
         @Html.ValidationSummary(true)
         <fieldset>
             <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" /><br />
-            <input type="submit" value="Submit" />
+            <input type="submit" value="Add Stock" />
         </fieldset>
     }
 </section>
@@ -72,7 +71,7 @@
             <td>@stock.YearHigh</td>
             <td>@stock.Dividend</td>
             <td>@stock.TargetPrice</td>
-            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol, stockSymbols = true })'" /></td>
+            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStockSymbol", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
         </tr>
     }
 </table>
@@ -89,7 +88,7 @@
             <label class="inputLabel">Enter stock symbol</label><input class="rightAlign" type="text" name="stockSymbol" />
             <label class="inputLabel">Enter # of shares</label><input class="rightAlign" type="text" name="numberOfShares" title="+ve if adding. -ve in selling" />
             <label class="inputLabel">Enter stock price</label><input class="rightAlign" type="text" name="stockPrice" /><br />
-            <input type="submit" value="Submit" />
+            <input type="submit" value="Add Stock Transaction" />
         </fieldset>
     }
 </section>
@@ -112,7 +111,7 @@
             <td>@stock.Performance</td>
             <td>@stock.CostBasis</td>
             <td>@stock.StockGrade</td>
-            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStock", "Stock", new { stockSymbol = @stock.StockSymbol, stockSymbols = false })'" /></td>
+            <td><input type="button" value="Remove" onclick="location.href='@Url.Action("RemoveStockInformation", "Stock", new { stockSymbol = @stock.StockSymbol })'" /></td>
         </tr>
     }
 </table>
