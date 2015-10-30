@@ -135,7 +135,7 @@
 
             var eStock = document.getElementById("SelectedStock");
             var selectedStock = eStock.options[eStock.selectedIndex].value;
-            document["chart"].src = '/Stock/StockChart?stockSymbol=' + selectedStock + '&date=' + date;
+            document.getElementById("chart").src = '/Stock/StockChart?stockSymbol=' + selectedStock + '&date=' + date;
         }
     </script>
 }
